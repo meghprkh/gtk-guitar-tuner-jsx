@@ -16,21 +16,17 @@ export function dom (element, attributes, ...children) {
 
 export function render (vdom) {
   var el;
-  switch (vdom.element) {
-    case window:
-      el = new Gtk.Window(vdom.attributes)
-      if (vdom.children) vdom.children.map(child => el.add(render(child, el)))
-      el.show()
-      break
-    case buttonBox:
-      el = new Gtk.ButtonBox(vdom.attributes)
-      if (vdom.children) vdom.children.map(child => el.add(render(child, el)))
-      el.show_all()
-      break
-    case button:
-      el = new Gtk.Button(vdom.attributes);
-      break
-  }
-  if (vdom.signals) Object.keys(vdom.signals).map(signal => el.connect(signal, vdom.signals[signal]))
+  const elname = vdom.element[0].toUpperCase() + vdom.element.substring(1);
+  el = new Gtk[elname]()
+  Object.keys(vdom.attributes).map(key => el[key] = vdom.attributes[key])
+  if (vdom.children) vdom.children.map(child => el.add(render(child, el)))
+  if (vdom.signals) Object.keys(vdom.signals).map(signal => {
+    try {
+      el.connect(signal, vdom.signals[signal])
+    } catch (err) {
+      print(err)
+    }
+  })
+  el.show_all()
   return el;
 }
